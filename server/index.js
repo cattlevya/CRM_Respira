@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 5001;
 // Middleware
 app.use(cors({
     origin: [
+        'https://respiraa-id.netlify.app',
         'https://respira-id-4b54cf8f.netlify.app',
         'http://localhost:5173'
     ],
