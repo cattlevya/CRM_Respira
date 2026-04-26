@@ -14,7 +14,7 @@ const TreeManager = () => {
     useEffect(() => {
         const fetchTree = async () => {
             try {
-                const res = await fetch('http://localhost:5001/api/tree');
+                const res = await fetch(`${API_BASE}/tree`);
                 const data = await res.json();
                 if (data.success) {
                     setNodes(data.data.nodes);

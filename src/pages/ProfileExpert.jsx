@@ -32,7 +32,7 @@ const ProfileExpert = () => {
             // I'll assume I updated the GET endpoint or will update it. 
             // Actually, I should update the GET endpoint in server/index.js to include these fields.
             // For now, let's try fetching.
-            const res = await fetch(`http://localhost:5001/api/user/profile/${user.id}`);
+            const res = await fetch(`${API_BASE}/user/profile/${user.id}`);
             const data = await res.json();
             if (data.success) {
                 setFormData({
@@ -60,7 +60,7 @@ const ProfileExpert = () => {
         setMessage(null);
 
         try {
-            const res = await fetch(`http://localhost:5001/api/expert/profile/${user.id}`, {
+            const res = await fetch(`${API_BASE}/expert/profile/${user.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

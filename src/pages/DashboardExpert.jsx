@@ -47,7 +47,7 @@ const DashboardExpert = () => {
     const fetchData = async () => {
         try {
             // Fetch Stats
-            const statsRes = await fetch('http://localhost:5001/api/admin/stats');
+            const statsRes = await fetch(`${API_BASE}/admin/stats`);
             const statsData = await statsRes.json();
             if (statsData.success) {
                 setStats(prev => ({ ...prev, ...statsData.data }));

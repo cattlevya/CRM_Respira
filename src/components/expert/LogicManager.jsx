@@ -120,7 +120,7 @@ const LogicManager = ({ initialTree }) => {
     const handleSave = async () => {
         setSaving(true);
         try {
-            const res = await fetch('http://localhost:5001/api/expert/save-tree', {
+            const res = await fetch(`${API_BASE}/expert/save-tree`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ treeData: tree })

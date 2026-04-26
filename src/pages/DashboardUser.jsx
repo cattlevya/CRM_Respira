@@ -40,7 +40,7 @@ const DashboardUser = () => {
         if (user?.id) {
             try {
                 // 1. Dashboard Data
-                const response = await fetch(`http://localhost:5001/api/dashboard/${user.id}`);
+                const response = await fetch(`${API_BASE}/dashboard/${user.id}`);
                 const result = await response.json();
 
                 if (result.success) {

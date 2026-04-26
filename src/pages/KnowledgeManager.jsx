@@ -17,7 +17,7 @@ const KnowledgeManager = () => {
         setLoading(true);
         setError(null);
         try {
-            const res = await fetch('http://localhost:5001/api/expert/research', {
+            const res = await fetch(`${API_BASE}/expert/research`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ type: 'auto' }),
@@ -38,7 +38,7 @@ const KnowledgeManager = () => {
 
     const handleApprove = async (draft, index) => {
         try {
-            const res = await fetch('http://localhost:5001/api/expert/merge', {
+            const res = await fetch(`${API_BASE}/expert/merge`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ draft }),
