@@ -10,7 +10,13 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: [
+        'https://respira-id-4b54cf8f.netlify.app',
+        'http://localhost:5173'
+    ],
+    credentials: true
+}));
 app.use(bodyParser.json());
 
 // --- ONLINE STATUS MIDDLEWARE ---
