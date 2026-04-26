@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Plus, Trash2, ChevronDown, ChevronRight, Edit2, AlertTriangle, CheckCircle } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
 const LogicManager = ({ initialTree }) => {
     const [tree, setTree] = useState(initialTree || []);
     const [levels, setLevels] = useState({});

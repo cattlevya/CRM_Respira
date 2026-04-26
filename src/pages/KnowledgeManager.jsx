@@ -4,6 +4,8 @@ import clsx from 'clsx';
 import LogicManager from '../components/expert/LogicManager';
 import { decisionTree } from '../data/decisionTree';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
 const KnowledgeManager = () => {
     const [activeTab, setActiveTab] = useState('logic'); // logic, research
     const [loading, setLoading] = useState(false);

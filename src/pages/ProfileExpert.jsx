@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Save, User, Building, FileBadge, GraduationCap, Loader2, CheckCircle } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
 const ProfileExpert = () => {
     const { user } = useAuth();
     const [formData, setFormData] = useState({

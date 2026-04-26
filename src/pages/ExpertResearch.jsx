@@ -3,6 +3,8 @@ import { Brain, Search, Check, X, FileText, Loader2, Sparkles, ArrowRight, GitMe
 import LogicManager from '../components/expert/LogicManager';
 import { decisionTree } from '../data/decisionTree';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
 const ExpertResearch = () => {
     const [activeTab, setActiveTab] = useState('research'); // 'research' | 'logic'
     const [loading, setLoading] = useState(false);

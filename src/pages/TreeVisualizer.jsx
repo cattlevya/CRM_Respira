@@ -10,6 +10,8 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { RefreshCw, ZoomIn, ZoomOut, Maximize, Lock } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
 // Custom Node Styles (Inline for simplicity, or could be separate components)
 const nodeStyles = {
     input: {

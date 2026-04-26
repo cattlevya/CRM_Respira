@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Edit2, Search, Save, X, Plus, Trash2, GitBranch } from 'lucide-react';
 import { Card, Button, Badge } from '../components/ui/Widgets';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+
 const TreeManager = () => {
     const [nodes, setNodes] = useState([]);
     const [loading, setLoading] = useState(true);
