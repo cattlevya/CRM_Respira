@@ -1,0 +1,21 @@
+--- DEBUGGING EMERGENCY COUNT V2 ---
+
+Query Result (Count): 3
+
+Matching Rows:
+[Wed Dec 03 2025 19:31:53 GMT+0700 (Western Indonesia Time)] User 8: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Wed Dec 03 2025 19:33:32 GMT+0700 (Western Indonesia Time)] User 9: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Thu Dec 04 2025 08:32:00 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Suspek Sindrom Koroner Akut (Serangan Jantung)
+[Thu Dec 04 2025 08:37:12 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Suspek Sindrom Koroner Akut (Serangan Jantung)
+[Thu Dec 04 2025 08:37:29 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Penurunan Kesadaran (Syok/Gagal Napas)
+[Thu Dec 04 2025 08:38:42 GMT+0700 (Western Indonesia Time)] User 3: Serangan Asma (Eksaserbasi)
+[Thu Dec 04 2025 08:42:33 GMT+0700 (Western Indonesia Time)] User 3: Serangan Asma (Eksaserbasi)
+[Thu Dec 04 2025 09:01:38 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Thu Dec 04 2025 09:06:42 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Thu Dec 04 2025 10:26:19 GMT+0700 (Western Indonesia Time)] User 3: Suspek Tuberkulosis (TB) Paru
+[Thu Dec 04 2025 10:39:19 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Thu Dec 04 2025 10:58:08 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Thu Dec 04 2025 10:58:12 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Distres Pernapasan Berat
+[Thu Dec 04 2025 10:58:16 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Penurunan Kesadaran (Syok / Gagal Napas)
+[Thu Dec 04 2025 10:58:20 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Distres Pernapasan Berat
+[Thu Dec 04 2025 10:58:24 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Hipoksia Berat / Gagal Napas

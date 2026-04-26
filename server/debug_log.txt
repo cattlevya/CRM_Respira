@@ -1,0 +1,17 @@
+--- DEBUGGING EMERGENCY COUNT ---
+
+1. Recent Logs (Last 10):
+[Thu Dec 04 2025 10:58:24 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Thu Dec 04 2025 10:58:20 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Distres Pernapasan Berat
+[Thu Dec 04 2025 10:58:16 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Penurunan Kesadaran (Syok / Gagal Napas)
+[Thu Dec 04 2025 10:58:12 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Distres Pernapasan Berat
+[Thu Dec 04 2025 10:58:08 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Thu Dec 04 2025 10:39:19 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Thu Dec 04 2025 10:26:19 GMT+0700 (Western Indonesia Time)] User 3: Suspek Tuberkulosis (TB) Paru
+[Thu Dec 04 2025 09:06:42 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Thu Dec 04 2025 09:01:38 GMT+0700 (Western Indonesia Time)] User 3: GAWAT DARURAT: Hipoksia Berat / Gagal Napas
+[Thu Dec 04 2025 08:42:33 GMT+0700 (Western Indonesia Time)] User 3: Serangan Asma (Eksaserbasi)
+
+2. Query Result (Count): 3
+
+3. DB Time Check: {"db_time":"2025-12-04T04:27:20.000Z","global_tz":"SYSTEM","session_tz":"SYSTEM"}
