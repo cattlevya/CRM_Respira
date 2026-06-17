@@ -16,6 +16,7 @@ const AdminDashboard = () => {
     // Overview state
     const [stats, setStats] = useState(null);
     const [loadingStats, setLoadingStats] = useState(true);
+    const [chartType, setChartType] = useState('bar'); // 'bar' or 'line'
 
     // User management state
     const [users, setUsers] = useState([]);
@@ -274,9 +275,26 @@ const AdminDashboard = () => {
                                         </h3>
                                         <p className="text-xs text-slate-500 mt-1">Akumulasi pertumbuhan user yang beralih ke layanan Pro per minggu</p>
                                     </div>
-                                    <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
-                                        Tren Mingguan
-                                    </span>
+                                    <div className="flex bg-slate-100 rounded-lg p-0.5 border border-slate-200 shrink-0">
+                                        <button 
+                                            onClick={() => setChartType('bar')}
+                                            className={clsx(
+                                                "px-3 py-1 text-xs font-bold rounded-md transition-all",
+                                                chartType === 'bar' ? "bg-white text-teal-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                                            )}
+                                        >
+                                            Batang
+                                        </button>
+                                        <button 
+                                            onClick={() => setChartType('line')}
+                                            className={clsx(
+                                                "px-3 py-1 text-xs font-bold rounded-md transition-all",
+                                                chartType === 'line' ? "bg-white text-teal-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                                            )}
+                                        >
+                                            Garis
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {stats.weeklyGrowth && stats.weeklyGrowth.length > 0 ? (
@@ -287,6 +305,22 @@ const AdminDashboard = () => {
                                         const chartWidth = 800;
                                         const barWidth = 40;
                                         const gap = (chartWidth - (data.length * barWidth)) / (data.length + 1);
+
+                                        // Calculate coordinates for line chart
+                                        const coordinates = data.map((item, index) => {
+                                            const x = gap + index * (barWidth + gap) + 20 + (barWidth / 2);
+                                            const barHeight = (item.count / maxCount) * (chartHeight - 60);
+                                            const y = chartHeight - barHeight - 20;
+                                            return { x, y, ...item };
+                                        });
+
+                                        const linePath = coordinates.length > 0 
+                                            ? `M ${coordinates.map(c => `${c.x} ${c.y}`).join(' L ')}` 
+                                            : '';
+                                        
+                                        const areaPath = coordinates.length > 0 
+                                            ? `${linePath} L ${coordinates[coordinates.length - 1].x} ${chartHeight - 20} L ${coordinates[0].x} ${chartHeight - 20} Z` 
+                                            : '';
 
                                         return (
                                             <div className="w-full">
@@ -320,8 +354,26 @@ const AdminDashboard = () => {
                                                             );
                                                         })}
 
-                                                        {/* Bars */}
-                                                        {data.map((item, index) => {
+                                                        {/* Line Chart specific background area fill & path line */}
+                                                        {chartType === 'line' && coordinates.length > 0 && (
+                                                            <>
+                                                                <path 
+                                                                    d={areaPath} 
+                                                                    fill="url(#lineAreaGradient)" 
+                                                                />
+                                                                <path 
+                                                                    d={linePath} 
+                                                                    fill="none" 
+                                                                    stroke="#0d9488" 
+                                                                    strokeWidth="3.5" 
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                />
+                                                            </>
+                                                        )}
+
+                                                        {/* Data Elements (Bars or Circles) */}
+                                                        {coordinates.map((item, index) => {
                                                             const x = gap + index * (barWidth + gap) + 20;
                                                             const barHeight = (item.count / maxCount) * (chartHeight - 60);
                                                             const y = chartHeight - barHeight - 20;
@@ -330,17 +382,17 @@ const AdminDashboard = () => {
                                                                 <g key={index} className="group cursor-pointer">
                                                                     {/* Tooltip background */}
                                                                     <rect 
-                                                                        x={x - 20} 
-                                                                        y={y - 35} 
-                                                                        width={barWidth + 40} 
+                                                                        x={item.x - 35} 
+                                                                        y={item.y - 35} 
+                                                                        width="70" 
                                                                         height="28" 
                                                                         rx="6" 
                                                                         fill="#0f172a" 
                                                                         className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                                                                     />
                                                                     <text 
-                                                                        x={x + barWidth / 2} 
-                                                                        y={y - 17} 
+                                                                        x={item.x} 
+                                                                        y={item.y - 17} 
                                                                         fill="#ffffff" 
                                                                         fontSize="10" 
                                                                         fontWeight="bold"
@@ -350,20 +402,43 @@ const AdminDashboard = () => {
                                                                         {item.count} User
                                                                     </text>
 
-                                                                    {/* Main Bar */}
-                                                                    <rect
-                                                                        x={x}
-                                                                        y={y}
-                                                                        width={barWidth}
-                                                                        height={barHeight}
-                                                                        rx="6"
-                                                                        fill="url(#barGradient)"
-                                                                        className="hover:fill-teal-600 transition-all duration-300"
-                                                                    />
+                                                                    {chartType === 'bar' ? (
+                                                                        /* Batang / Bar Chart */
+                                                                        <rect
+                                                                            x={x}
+                                                                            y={y}
+                                                                            width={barWidth}
+                                                                            height={barHeight}
+                                                                            rx="6"
+                                                                            fill="url(#barGradient)"
+                                                                            className="hover:fill-teal-600 transition-all duration-300"
+                                                                        />
+                                                                    ) : (
+                                                                        /* Garis / Line Chart Node points */
+                                                                        <>
+                                                                            <circle 
+                                                                                cx={item.x} 
+                                                                                cy={item.y} 
+                                                                                r="7" 
+                                                                                fill="#ffffff" 
+                                                                                stroke="#0d9488" 
+                                                                                strokeWidth="3"
+                                                                                className="group-hover:r-9 transition-all duration-200"
+                                                                            />
+                                                                            <circle 
+                                                                                cx={item.x} 
+                                                                                cy={item.y} 
+                                                                                r="14" 
+                                                                                fill="#0d9488" 
+                                                                                fillOpacity="0"
+                                                                                className="group-hover:fill-opacity-10 transition-all duration-200"
+                                                                            />
+                                                                        </>
+                                                                    )}
 
                                                                     {/* Label Week */}
                                                                     <text
-                                                                        x={x + barWidth / 2}
+                                                                        x={item.x}
                                                                         y={chartHeight - 2}
                                                                         fill="#64748b"
                                                                         fontSize="10"
@@ -384,6 +459,10 @@ const AdminDashboard = () => {
                                                             <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
                                                                 <stop offset="0%" stopColor="#0d9488" />
                                                                 <stop offset="100%" stopColor="#2dd4bf" />
+                                                            </linearGradient>
+                                                            <linearGradient id="lineAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop offset="0%" stopColor="#0d9488" stopOpacity="0.25" />
+                                                                <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0.00" />
                                                             </linearGradient>
                                                         </defs>
                                                     </svg>
