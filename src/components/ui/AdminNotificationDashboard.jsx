@@ -11,23 +11,8 @@ const AdminNotificationDashboard = () => {
   });
   const [cronStatus, setCronStatus] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [manualNotification, setManualNotification] = useState({
-    userId: '',
-    notificationType: 'screening_result',
-    message: ''
-  });
-
-  const notificationTypes = [
-    { key: 'consultation_reminder', label: 'Pengingat Konsultasi' },
-    { key: 'screening_result', label: 'Hasil Skrining' },
-    { key: 'doctor_message', label: 'Pesan dari Dokter' },
-    { key: 'prescription_ready', label: 'Resep Tersedia' },
-    { key: 'health_tips', label: 'Tips Kesehatan' },
-    { key: 'aqi_alert', label: 'Alert Kualitas Udara' }
-  ];
 
   // Fetch statistics
   useEffect(() => {
@@ -88,49 +73,6 @@ const AdminNotificationDashboard = () => {
           { name: 'Daily Health Tips', schedule: '7:00 AM daily' }
         ]
       });
-    }
-  };
-
-  const handleSendManualNotification = async () => {
-    try {
-      setSending(true);
-      setError('');
-
-      if (!manualNotification.userId) {
-        setError('User ID diperlukan');
-        return;
-      }
-
-      const token = localStorage.getItem('token');
-
-      const response = await fetch('/api/telegram/admin/send-notification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          userId: parseInt(manualNotification.userId),
-          notificationType: manualNotification.notificationType,
-          data: { message: manualNotification.message }
-        })
-      });
-
-      if (!response.ok) throw new Error('Gagal mengirim notifikasi');
-
-      const data = await response.json();
-      setSuccess(`Notifikasi berhasil di-queue (Job ID: ${data.jobId})`);
-      setManualNotification({
-        userId: '',
-        notificationType: 'screening_result',
-        message: ''
-      });
-      
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSending(false);
     }
   };
 
@@ -236,86 +178,6 @@ const AdminNotificationDashboard = () => {
         </Card>
       )}
 
-      {/* Manual Notification Sender */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2 mb-6">
-          <Send className="w-6 h-6 text-teal-500" />
-          Kirim Notifikasi Manual
-        </h3>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
-              User ID
-            </label>
-            <input
-              type="number"
-              value={manualNotification.userId}
-              onChange={(e) => setManualNotification(prev => ({
-                ...prev,
-                userId: e.target.value
-              }))}
-              placeholder="Masukkan ID user yang akan menerima notifikasi"
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
-              Tipe Notifikasi
-            </label>
-            <select
-              value={manualNotification.notificationType}
-              onChange={(e) => setManualNotification(prev => ({
-                ...prev,
-                notificationType: e.target.value
-              }))}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
-            >
-              {notificationTypes.map(type => (
-                <option key={type.key} value={type.key}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-900 mb-2">
-              Pesan (Optional)
-            </label>
-            <textarea
-              value={manualNotification.message}
-              onChange={(e) => setManualNotification(prev => ({
-                ...prev,
-                message: e.target.value
-              }))}
-              placeholder="Pesan tambahan (opsional)"
-              rows={3}
-              className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none resize-none"
-            />
-          </div>
-
-          <button
-            onClick={handleSendManualNotification}
-            disabled={sending || !manualNotification.userId}
-            className="w-full px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-semibold rounded-xl hover:shadow-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {sending ? (
-              <>
-                <Loader className="w-5 h-5 animate-spin" />
-                Mengirim...
-              </>
-            ) : (
-              <>
-                <Zap className="w-5 h-5" />
-                Kirim Notifikasi
-              </>
-            )}
-          </button>
-        </div>
-      </Card>
-
       {/* Help Section */}
       <Card className="bg-slate-50 border border-slate-200 p-6">
         <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
@@ -323,10 +185,6 @@ const AdminNotificationDashboard = () => {
           Panduan
         </h3>
         <div className="space-y-3 text-sm text-slate-600">
-          <p>
-            <strong>Bagaimana cara mengirim notifikasi manual?</strong><br />
-            Isi User ID pengguna yang ingin menerima notifikasi, pilih tipe notifikasi, dan klik tombol Kirim.
-          </p>
           <p>
             <strong>Apa itu Cron Jobs?</strong><br />
             Cron jobs adalah tugas yang berjalan otomatis sesuai jadwal untuk mengirim reminder konsultasi, mengecek kualitas udara, dan mengirim tips kesehatan.
