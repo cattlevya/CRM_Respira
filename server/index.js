@@ -1198,6 +1198,24 @@ app.get('/api/admin/subscription-stats', async (req, res) => {
         const [patientRows] = await db.query("SELECT COUNT(*) as count FROM users WHERE role = 'patient'");
         const [expertRows] = await db.query("SELECT COUNT(*) as count FROM users WHERE role = 'expert'");
 
+        // Paid consultations count & revenue
+        const [paidConsultationsRows] = await db.query("SELECT COUNT(*) as count FROM consultations WHERE notes LIKE '%PAID MEET%'");
+        const paidConsultationsCount = parseInt(paidConsultationsRows[0].count);
+        const consultationRevenue = paidConsultationsCount * 50000;
+
+        // Recent paid consultations
+        const [recentPaidConsultations] = await db.query(`
+            SELECT c.id, c.requested_date, c.notes, c.created_at, 
+                   u.name as patient_name, u.email as patient_email,
+                   doc.name as doctor_name
+            FROM consultations c
+            JOIN users u ON c.user_id = u.id
+            JOIN users doc ON c.doctor_id = doc.id
+            WHERE c.notes LIKE '%PAID MEET%'
+            ORDER BY c.created_at DESC
+            LIMIT 10
+        `);
+
         // Recent pro upgrades (last 30 days) - patient only
         const [recentUpgrades] = await db.query(`
             SELECT id, name, email, premium_since 
@@ -1224,7 +1242,8 @@ app.get('/api/admin/subscription-stats', async (req, res) => {
         const freeUsers = parseInt(freeUsersRows[0].count);
         const totalPatients = parseInt(patientRows[0].count);
         const totalExperts = parseInt(expertRows[0].count);
-        const estimatedRevenue = proUsers * 49000;
+        const proRevenue = proUsers * 49000;
+        const estimatedRevenue = proRevenue + consultationRevenue;
 
         res.json({
             success: true,
@@ -1234,8 +1253,11 @@ app.get('/api/admin/subscription-stats', async (req, res) => {
                 freeUsers,
                 totalPatients,
                 totalExperts,
+                proRevenue,
+                consultationRevenue,
                 estimatedRevenue,
                 recentUpgrades,
+                recentPaidConsultations,
                 weeklyGrowth: weeklyGrowth.map(w => ({
                     week: new Date(w.week).toISOString().split('T')[0],
                     count: parseInt(w.count)

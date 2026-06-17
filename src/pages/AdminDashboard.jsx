@@ -3,7 +3,8 @@ import {
     Sparkles, Users, Crown, DollarSign, Search, Filter, 
     ArrowUpDown, ChevronDown, Check, X, Activity, 
     TrendingUp, UserCheck, UserX, Shield, Clock,
-    BarChart3, Save, Plus, FileText, Bell, GitMerge, Brain, Loader2
+    BarChart3, Save, Plus, FileText, Bell, GitMerge, Brain, Loader2,
+    Stethoscope
 } from 'lucide-react';
 import clsx from 'clsx';
 import { api } from '../services/api';
@@ -256,43 +257,83 @@ const AdminDashboard = () => {
                                         </div>
                                     </div>
                                     <p className="text-2xl font-extrabold">{formatCurrency(stats.estimatedRevenue)}</p>
-                                    <p className="text-xs text-emerald-100 mt-1">Estimasi Revenue / Bulan</p>
-                                    <p className="text-xs text-emerald-200 mt-2">{stats.proUsers} × Rp 49.000</p>
+                                    <p className="text-xs text-emerald-100 mt-1">Estimasi Total Pendapatan</p>
+                                    <p className="text-[10px] text-emerald-250 mt-1.5 leading-tight">
+                                        Pro: {formatCurrency(stats.proRevenue || 0)} | Temu: {formatCurrency(stats.consultationRevenue || 0)}
+                                    </p>
                                 </div>
                             </div>
 
-                            {/* Recent Upgrades */}
-                            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                                <div className="p-5 border-b border-slate-100">
-                                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                        <TrendingUp className="w-5 h-5 text-emerald-500" />
-                                        User Terbaru yang Upgrade ke Pro
-                                    </h3>
-                                </div>
-                                <div className="divide-y divide-slate-50">
-                                    {stats.recentUpgrades && stats.recentUpgrades.length > 0 ? (
-                                        stats.recentUpgrades.map((u) => (
-                                            <div key={u.id} className="px-5 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center text-amber-700 font-bold text-sm">
-                                                        {u.name?.charAt(0) || '?'}
+                            {/* Transactions & Upgrades Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Recent Upgrades */}
+                                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                                    <div className="p-5 border-b border-slate-100">
+                                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                            <TrendingUp className="w-5 h-5 text-teal-600" />
+                                            Upgrade Pro Terbaru (49k)
+                                        </h3>
+                                    </div>
+                                    <div className="divide-y divide-slate-50 max-h-96 overflow-y-auto">
+                                        {stats.recentUpgrades && stats.recentUpgrades.length > 0 ? (
+                                            stats.recentUpgrades.map((u) => (
+                                                <div key={u.id} className="px-5 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 bg-teal-50 rounded-full flex items-center justify-center text-teal-700 font-bold text-sm">
+                                                            {u.name?.charAt(0) || '?'}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-semibold text-slate-800 leading-tight">{u.name}</p>
+                                                            <p className="text-[10px] text-slate-400 mt-0.5">{u.email}</p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-sm font-semibold text-slate-800">{u.name}</p>
-                                                        <p className="text-xs text-slate-400">{u.email}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <Crown className="w-3.5 h-3.5 text-amber-500" />
+                                                        <span className="text-[10px] text-slate-500 font-medium">{formatDate(u.premium_since)}</span>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Crown className="w-4 h-4 text-amber-500" />
-                                                    <span className="text-xs text-slate-500">{formatDate(u.premium_since)}</span>
-                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="p-8 text-center text-slate-400 text-sm">
+                                                Belum ada user yang upgrade ke Pro.
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="p-8 text-center text-slate-400 text-sm">
-                                            Belum ada user yang upgrade ke Pro.
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Recent Paid Consultations */}
+                                <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                                    <div className="p-5 border-b border-slate-100">
+                                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                            <Stethoscope className="w-5 h-5 text-emerald-600" />
+                                            Transaksi Pertemuan Berbayar (50k)
+                                        </h3>
+                                    </div>
+                                    <div className="divide-y divide-slate-50 max-h-96 overflow-y-auto">
+                                        {stats.recentPaidConsultations && stats.recentPaidConsultations.length > 0 ? (
+                                            stats.recentPaidConsultations.map((c) => (
+                                                <div key={c.id} className="px-5 py-3 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="w-8 h-8 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-700 font-bold text-sm shrink-0">
+                                                            {c.patient_name?.charAt(0) || '?'}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-semibold text-slate-800 leading-tight truncate">{c.patient_name}</p>
+                                                            <p className="text-[10px] text-slate-400 mt-0.5 truncate">dr. {c.doctor_name}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex flex-col items-end shrink-0 pl-2">
+                                                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100">Lunas</span>
+                                                        <span className="text-[9px] text-slate-400 mt-1">{formatDate(c.created_at)}</span>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="p-8 text-center text-slate-400 text-sm">
+                                                Belum ada transaksi pertemuan berbayar.
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </>
