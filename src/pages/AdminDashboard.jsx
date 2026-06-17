@@ -86,12 +86,23 @@ const AdminDashboard = () => {
 
     const handleTogglePremium = async (userId) => {
         setTogglingUser(userId);
-        const res = await api.toggleUserPremium(userId);
-        if (res.success) {
-            fetchUsers();
-            fetchStats(); // Refresh stats too
+        try {
+            console.log("Toggling premium for user:", userId);
+            const res = await api.toggleUserPremium(userId);
+            console.log("Toggle premium result:", res);
+            if (res.success) {
+                fetchUsers();
+                fetchStats(); // Refresh stats too
+                alert(res.message || 'Status premium berhasil diperbarui!');
+            } else {
+                alert(res.message || 'Gagal memperbarui status premium.');
+            }
+        } catch (err) {
+            console.error("Toggle Premium Error:", err);
+            alert('Terjadi kesalahan koneksi saat memproses.');
+        } finally {
+            setTogglingUser(null);
         }
-        setTogglingUser(null);
     };
 
     const handleReviewResearch = async (draftId, action) => {
