@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS consultations (
     diagnosis_log_id INT REFERENCES diagnosis_logs(id) ON DELETE SET NULL,
     requested_date TIMESTAMP,
     notes TEXT,
-    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled')),
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled', 'completed')),
     doctor_response TEXT,
     created_at TIMESTAMP DEFAULT NOW()
 );
