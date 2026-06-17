@@ -1,12 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, X, Shield, Zap, Sparkles, MessageSquare, Bell, ArrowRight, Crown, Activity, Calendar, History, Brain, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import UpgradeModal from '../components/modals/UpgradeModal';
+import { api } from '../services/api';
 
 const Pricing = () => {
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const isPremium = user?.is_premium || user?.isPremium;
+
+    useEffect(() => {
+        if (!user?.id) return;
+        
+        const syncUserPremiumStatus = async () => {
+            try {
+                const res = await api.getProfile(user.id);
+                if (res.success && res.data) {
+                    const latestPremium = res.data.is_premium;
+                    // Only update if there is a discrepancy to prevent infinite loops
+                    if (latestPremium !== isPremium) {
+                        updateUser({ is_premium: latestPremium });
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to sync premium status:", err);
+            }
+        };
+
+        syncUserPremiumStatus();
+    }, [user?.id, isPremium, updateUser]);
 
     const comparisonFeatures = [
         { name: 'Diagnosa mandiri (AI)', free: true, pro: true },
