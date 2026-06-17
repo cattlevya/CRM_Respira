@@ -26,6 +26,10 @@ import Chat from './pages/Chat'; // New Chat Page
 // Helper Component for Role-Based Dashboard
 const RoleBasedDashboard = () => {
   const { user } = useAuth();
+  
+  if (user?.role === 'admin') {
+    return <AdminDashboard />;
+  }
   if (user?.role === 'expert') {
     return <DashboardExpert />;
   }
@@ -39,15 +43,25 @@ const App = () => {
         {/* Public Route */}
         <Route path="/login" element={<AuthPage />} />
 
-        {/* Protected Routes (Patient & Expert) */}
+        {/* Protected Routes (Main entry points) */}
         <Route path="/" element={
-          <ProtectedRoute allowedRoles={['patient', 'expert']}>
+          <ProtectedRoute allowedRoles={['patient', 'expert', 'admin']}>
             <AppShell>
               <RoleBasedDashboard />
             </AppShell>
           </ProtectedRoute>
         } />
 
+        {/* Admin Exclusive Routes */}
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AppShell>
+              <AdminDashboard />
+            </AppShell>
+          </ProtectedRoute>
+        } />
+
+        {/* Patient Specific Routes */}
         <Route path="/diagnosa" element={
           <ProtectedRoute allowedRoles={['patient']}>
             <AppShell>
@@ -64,6 +78,7 @@ const App = () => {
           </ProtectedRoute>
         } />
 
+        {/* Common Shared Routes (Patient & Expert) */}
         <Route path="/kamus" element={
           <ProtectedRoute allowedRoles={['patient', 'expert']}>
             <AppShell>
@@ -89,7 +104,7 @@ const App = () => {
         } />
 
         <Route path="/profile" element={
-          <ProtectedRoute allowedRoles={['patient', 'expert']}>
+          <ProtectedRoute allowedRoles={['patient', 'expert', 'admin']}>
             <AppShell>
               <Profile />
             </AppShell>
@@ -111,15 +126,6 @@ const App = () => {
             </AppShell>
           </ProtectedRoute>
         } />
-
-        <Route path="/admin" element={
-          <ProtectedRoute allowedRoles={['expert', 'admin']}>
-            <AppShell>
-              <AdminDashboard />
-            </AppShell>
-          </ProtectedRoute>
-        } />
-
 
         {/* Expert Only Routes */}
         <Route path="/expert/profile" element={

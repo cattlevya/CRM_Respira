@@ -39,6 +39,12 @@ const expertNavItems = [
     { label: 'Pengetahuan', path: '/expert/knowledge', icon: Database },
 ];
 
+const adminNavItems = [
+    { label: 'CRM Dashboard', path: '/admin', icon: LayoutDashboard },
+    { label: 'Knowledge Base', path: '/expert/knowledge', icon: Database },
+    { label: 'Sistem CRM', path: '/admin', icon: Activity },
+];
+
 const TopNav = ({ onMenuToggle }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -48,7 +54,8 @@ const TopNav = ({ onMenuToggle }) => {
     const dropdownRef = useRef(null);
 
     const isExpert = user?.role === 'expert';
-    const navItems = isExpert ? expertNavItems : patientNavItems;
+    const isAdmin = user?.role === 'admin';
+    const navItems = isAdmin ? adminNavItems : (isExpert ? expertNavItems : patientNavItems);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -153,7 +160,7 @@ const TopNav = ({ onMenuToggle }) => {
                                         Pengaturan Profil
                                     </button>
 
-                                    {(user?.role === 'expert' || user?.role === 'admin') && (
+                                    {user?.role === 'admin' && (
                                         <button
                                             onClick={() => { navigate('/admin'); setIsDropdownOpen(false); }}
                                             className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 border-b border-slate-50"
@@ -229,7 +236,9 @@ const TopNav = ({ onMenuToggle }) => {
                                     </div>
                                     <div>
                                         <p className="text-sm font-semibold text-slate-900">{user?.name}</p>
-                                        <p className="text-xs text-slate-500">{isExpert ? 'Dokter Spesialis' : 'Pasien'}</p>
+                                        <p className="text-xs text-slate-500">
+                                            {user?.role === 'admin' ? 'Administrator' : (user?.role === 'expert' ? 'Dokter Spesialis' : 'Pasien')}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
