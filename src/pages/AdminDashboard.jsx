@@ -264,6 +264,146 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
 
+                            {/* Growth Chart */}
+                            <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
+                                            <BarChart3 className="w-5 h-5 text-teal-600" />
+                                            Tren Pertumbuhan Pasien Premium (8 Minggu Terakhir)
+                                        </h3>
+                                        <p className="text-xs text-slate-500 mt-1">Akumulasi pertumbuhan pasien yang beralih ke layanan Pro per minggu</p>
+                                    </div>
+                                    <span className="text-xs font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-100">
+                                        Tren Mingguan
+                                    </span>
+                                </div>
+
+                                {stats.weeklyGrowth && stats.weeklyGrowth.length > 0 ? (
+                                    (() => {
+                                        const data = stats.weeklyGrowth;
+                                        const maxCount = Math.max(...data.map(d => d.count), 1);
+                                        const chartHeight = 160;
+                                        const chartWidth = 800;
+                                        const barWidth = 40;
+                                        const gap = (chartWidth - (data.length * barWidth)) / (data.length + 1);
+
+                                        return (
+                                            <div className="w-full">
+                                                <div className="relative h-[200px] w-full">
+                                                    <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full">
+                                                        {/* Grid Lines */}
+                                                        {[0, 0.25, 0.5, 0.75, 1].map((ratio, index) => {
+                                                            const yVal = chartHeight - (ratio * (chartHeight - 40)) - 20;
+                                                            const gridLabel = Math.round(ratio * maxCount);
+                                                            return (
+                                                                <g key={index}>
+                                                                    <line 
+                                                                        x1="40" 
+                                                                        y1={yVal} 
+                                                                        x2={chartWidth - 20} 
+                                                                        y2={yVal} 
+                                                                        stroke="#f1f5f9" 
+                                                                        strokeWidth="1.5" 
+                                                                    />
+                                                                    <text 
+                                                                        x="15" 
+                                                                        y={yVal + 4} 
+                                                                        fill="#94a3b8" 
+                                                                        fontSize="11" 
+                                                                        fontWeight="bold"
+                                                                        textAnchor="middle"
+                                                                    >
+                                                                        {gridLabel}
+                                                                    </text>
+                                                                </g>
+                                                            );
+                                                        })}
+
+                                                        {/* Bars */}
+                                                        {data.map((item, index) => {
+                                                            const x = gap + index * (barWidth + gap) + 20;
+                                                            const barHeight = (item.count / maxCount) * (chartHeight - 60);
+                                                            const y = chartHeight - barHeight - 20;
+
+                                                            return (
+                                                                <g key={index} className="group cursor-pointer">
+                                                                    {/* Tooltip background */}
+                                                                    <rect 
+                                                                        x={x - 20} 
+                                                                        y={y - 35} 
+                                                                        width={barWidth + 40} 
+                                                                        height="28" 
+                                                                        rx="6" 
+                                                                        fill="#0f172a" 
+                                                                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                                                    />
+                                                                    <text 
+                                                                        x={x + barWidth / 2} 
+                                                                        y={y - 17} 
+                                                                        fill="#ffffff" 
+                                                                        fontSize="10" 
+                                                                        fontWeight="bold"
+                                                                        textAnchor="middle" 
+                                                                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                                                                    >
+                                                                        {item.count} Pasien
+                                                                    </text>
+
+                                                                    {/* Main Bar */}
+                                                                    <rect
+                                                                        x={x}
+                                                                        y={y}
+                                                                        width={barWidth}
+                                                                        height={barHeight}
+                                                                        rx="6"
+                                                                        fill="url(#barGradient)"
+                                                                        className="hover:fill-teal-600 transition-all duration-300"
+                                                                    />
+
+                                                                    {/* Label Week */}
+                                                                    <text
+                                                                        x={x + barWidth / 2}
+                                                                        y={chartHeight - 2}
+                                                                        fill="#64748b"
+                                                                        fontSize="10"
+                                                                        fontWeight="bold"
+                                                                        textAnchor="middle"
+                                                                    >
+                                                                        {(() => {
+                                                                            const date = new Date(item.week);
+                                                                            return `W${Math.ceil(date.getDate() / 7)} (${date.toLocaleDateString('id-ID', { month: 'short' })})`;
+                                                                        })()}
+                                                                    </text>
+                                                                </g>
+                                                            );
+                                                        })}
+
+                                                        {/* Definitions for Gradients */}
+                                                        <defs>
+                                                            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop offset="0%" stopColor="#0d9488" />
+                                                                <stop offset="100%" stopColor="#2dd4bf" />
+                                                            </linearGradient>
+                                                        </defs>
+                                                    </svg>
+                                                </div>
+                                                <div className="flex justify-center gap-6 mt-2 text-[10px] text-slate-500 font-medium border-t border-slate-50 pt-3">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="w-2.5 h-2.5 bg-gradient-to-br from-teal-600 to-teal-400 rounded-sm" />
+                                                        W: Urutan Minggu & Bulan Registrasi
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()
+                                ) : (
+                                    <div className="p-10 text-center text-slate-400 text-sm">
+                                        Data tren pertumbuhan mingguan belum tersedia.
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Transactions & Upgrades Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Recent Upgrades */}
