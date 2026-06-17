@@ -3,7 +3,7 @@ import {
     Sparkles, Users, Crown, DollarSign, Search, Filter, 
     ArrowUpDown, ChevronDown, Check, X, Activity, 
     TrendingUp, UserCheck, UserX, Shield, Clock,
-    BarChart3, Save, Plus, FileText, Bell
+    BarChart3, Save, Plus, FileText, Bell, GitMerge, Brain, Loader2
 } from 'lucide-react';
 import clsx from 'clsx';
 import { api } from '../services/api';
@@ -28,6 +28,24 @@ const AdminDashboard = () => {
     const [topic, setTopic] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [generatedLogic, setGeneratedLogic] = useState(null);
+
+    // Research Approvals state
+    const [researchDrafts, setResearchDrafts] = useState([]);
+    const [loadingResearch, setLoadingResearch] = useState(false);
+
+    const fetchResearchDrafts = async () => {
+        setLoadingResearch(true);
+        try {
+            const res = await api.getResearchDrafts(null, 'admin');
+            if (res.success) {
+                setResearchDrafts(res.drafts || []);
+            }
+        } catch (err) {
+            console.error("Fetch research drafts error:", err);
+        } finally {
+            setLoadingResearch(false);
+        }
+    };
 
     // Fetch subscription stats
     const fetchStats = async () => {
@@ -56,6 +74,7 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         if (activeTab === 'users') fetchUsers();
+        if (activeTab === 'research') fetchResearchDrafts();
     }, [activeTab, roleFilter, premiumFilter]);
 
     // Debounce search
@@ -73,6 +92,21 @@ const AdminDashboard = () => {
             fetchStats(); // Refresh stats too
         }
         setTogglingUser(null);
+    };
+
+    const handleReviewResearch = async (draftId, action) => {
+        if (!window.confirm(`Apakah Anda yakin ingin ${action === 'approved' ? 'menyetujui' : 'menolak'} riset ini?`)) return;
+        try {
+            const res = await api.reviewResearchDraft(draftId, action);
+            if (res.success) {
+                alert(res.message);
+                fetchResearchDrafts();
+            } else {
+                alert(res.message || 'Gagal memproses draf riset.');
+            }
+        } catch (err) {
+            alert('Terjadi kesalahan saat memproses.');
+        }
     };
 
     const handleAnalyze = () => {
@@ -127,11 +161,12 @@ const AdminDashboard = () => {
             </div>
 
             {/* Tabs Switcher */}
-            <div className="flex p-1 bg-slate-100 rounded-xl w-full md:w-fit">
+            <div className="flex p-1 bg-slate-100 rounded-xl w-full md:w-fit overflow-x-auto whitespace-nowrap">
                 {[
                     { id: 'overview', label: 'Overview', icon: BarChart3 },
                     { id: 'users', label: 'Manajemen User', icon: Users },
                     { id: 'logic', label: 'Riset AI', icon: Sparkles },
+                    { id: 'research', label: 'Persetujuan Riset', icon: Shield },
                     { id: 'crm', label: 'CRM & Notifikasi', icon: Bell },
                 ].map(tab => (
                     <button
@@ -575,6 +610,109 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 </>
+            )}
+
+            {/* ===== TAB: RESEARCH APPROVALS ===== */}
+            {activeTab === 'research' && (
+                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex items-center space-x-2 text-slate-800 font-bold text-lg">
+                        <Shield className="w-5 h-5 text-teal-600 shrink-0" />
+                        <h2>Persetujuan Riset AI Medis</h2>
+                    </div>
+
+                    {loadingResearch ? (
+                        <div className="flex items-center justify-center py-16">
+                            <Loader2 className="w-10 h-10 text-teal-600 animate-spin" />
+                        </div>
+                    ) : researchDrafts.length === 0 ? (
+                        <div className="text-center py-16 border-2 border-dashed border-slate-200 rounded-3xl bg-white">
+                            <FileText className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                            <h3 className="text-slate-700 font-bold">Tidak Ada Usulan Riset</h3>
+                            <p className="text-slate-500 text-sm mt-1">Belum ada riset medis baru yang diajukan oleh dokter untuk disetujui.</p>
+                        </div>
+                    ) : (
+                        <div className="grid gap-6">
+                            {researchDrafts.map((d) => {
+                                const content = typeof d.content === 'string' ? JSON.parse(d.content) : d.content;
+                                return (
+                                    <div key={d.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                                        {/* Header */}
+                                        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50">
+                                            <div className="flex items-start gap-3">
+                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${content?.type === 'symptom' ? 'bg-teal-50 text-teal-600' : 'bg-cyan-50 text-cyan-600'}`}>
+                                                    {content?.type === 'symptom' ? <GitMerge className="w-6 h-6" /> : <Brain className="w-6 h-6" />}
+                                                </div>
+                                                <div>
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <h3 className="font-bold text-slate-900 text-base leading-tight">{content?.name || 'Temuan Baru'}</h3>
+                                                        <span className={`px-2 py-0.5 text-[10px] rounded-full font-bold uppercase tracking-wider ${content?.type === 'symptom' ? 'bg-teal-50 text-teal-700' : 'bg-cyan-50 text-cyan-700'}`}>
+                                                            {content?.type === 'symptom' ? 'Gejala Baru' : 'Aturan Logika'}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-slate-500 mt-1">
+                                                        Diusulkan oleh: <span className="font-semibold text-slate-700">{d.expert_name || 'Dokter Spesialis'}</span>
+                                                    </p>
+                                                    <p className="text-[10px] text-slate-400">Diajukan: {new Date(d.created_at).toLocaleString('id-ID')}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                {d.status === 'pending' ? (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleReviewResearch(d.id, 'rejected')}
+                                                            className="px-4 py-2 border border-slate-200 hover:border-rose-200 text-slate-600 hover:text-rose-600 rounded-xl font-semibold text-sm transition-colors flex items-center gap-1.5 bg-white"
+                                                        >
+                                                            <X className="w-4 h-4" /> Tolak
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleReviewResearch(d.id, 'approved')}
+                                                            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-semibold text-sm transition-all shadow-sm flex items-center gap-1.5"
+                                                        >
+                                                            <Check className="w-4 h-4" /> Setujui & Rilis
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize tracking-wide inline-flex items-center gap-1.5 ${
+                                                        d.status === 'approved' ? 'bg-teal-50 text-teal-700 border border-teal-100' :
+                                                        'bg-rose-50 text-rose-700 border border-rose-100'
+                                                    }`}>
+                                                        {d.status === 'approved' ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+                                                        {d.status === 'approved' ? 'Disetujui' : 'Ditolak'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Details */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 border-t border-slate-100">
+                                            <div className="p-6 space-y-2">
+                                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bukti Klinis & Referensi Jurnal</h4>
+                                                <p className="text-sm text-slate-700 leading-relaxed">{content?.clinical_evidence}</p>
+                                                <div className="pt-2">
+                                                    <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+                                                        Jurnal: {d.source_journal || 'Referensi Tidak Disebutkan'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="p-6 border-t md:border-t-0 md:border-l border-slate-100 bg-slate-50/30 space-y-3">
+                                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Langkah Implementasi Logika</h4>
+                                                <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-inner">
+                                                    <p className="text-sm text-slate-800 font-semibold mb-2">{content?.suggested_action}</p>
+                                                    {content?.proposed_node && (
+                                                        <pre className="text-xs font-mono text-slate-600 bg-slate-50 p-3 rounded-lg overflow-x-auto border border-slate-100">
+                                                            {JSON.stringify(content.proposed_node, null, 2)}
+                                                        </pre>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
             )}
 
             {/* ===== TAB: CRM ===== */}

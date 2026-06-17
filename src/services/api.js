@@ -318,5 +318,52 @@ export const api = {
         } catch (error) {
             return { success: false };
         }
+    },
+
+    // --- RESEARCH APPROVALS ---
+    submitResearchDraft: async (content, sourceJournal) => {
+        try {
+            const response = await fetch(`${API_URL}/expert/research/submit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ content, source_journal: sourceJournal })
+            });
+            return await response.json();
+        } catch (error) {
+            return { success: false, message: 'Gagal menghubungi server.' };
+        }
+    },
+
+    getResearchDrafts: async (userId, role) => {
+        try {
+            const query = new URLSearchParams({ userId, role }).toString();
+            const response = await fetch(`${API_URL}/expert/research/drafts?${query}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            return await response.json();
+        } catch (error) {
+            return { success: false, drafts: [] };
+        }
+    },
+
+    reviewResearchDraft: async (draftId, action) => {
+        try {
+            const response = await fetch(`${API_URL}/admin/research/review`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ draftId, action })
+            });
+            return await response.json();
+        } catch (error) {
+            return { success: false, message: 'Gagal memproses usulan riset.' };
+        }
     }
 };

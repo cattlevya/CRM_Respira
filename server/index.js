@@ -637,6 +637,117 @@ app.post('/api/expert/research', async (req, res) => {
     }
 });
 
+// Submit Research Draft for Admin Approval (Doctor Only)
+app.post('/api/expert/research/submit', async (req, res) => {
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        let userId = req.headers['x-user-id'] || req.body.userId;
+
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+                userId = decoded.id;
+            } catch (err) {
+                // fallback
+            }
+        }
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized: ID Dokter tidak ditemukan.' });
+        }
+
+        const { content, source_journal } = req.body;
+        
+        await db.query(
+            'INSERT INTO research_drafts (expert_id, content, status, source_journal, created_at) VALUES ($1, $2, $3, $4, NOW())',
+            [userId, JSON.stringify(content), 'pending', source_journal]
+        );
+
+        res.json({ success: true, message: 'Usulan riset AI berhasil diajukan ke admin.' });
+    } catch (err) {
+        console.error("Submit Research Draft Error:", err);
+        res.status(500).json({ success: false, message: 'Gagal mengajukan usulan riset AI.' });
+    }
+});
+
+// Get Research Drafts (Doctor views own drafts, Admin views all)
+app.get('/api/expert/research/drafts', async (req, res) => {
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        let userId = req.headers['x-user-id'] || req.query.userId;
+        let role = req.headers['x-user-role'] || req.query.role;
+
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+                userId = decoded.id;
+                role = decoded.role;
+            } catch (err) {
+                // fallback
+            }
+        }
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized.' });
+        }
+
+        if (role === 'admin') {
+            const [rows] = await db.query(
+                'SELECT r.*, u.name as expert_name FROM research_drafts r LEFT JOIN users u ON r.expert_id = u.id ORDER BY r.created_at DESC'
+            );
+            return res.json({ success: true, drafts: rows });
+        } else {
+            const [rows] = await db.query(
+                'SELECT * FROM research_drafts WHERE expert_id = $1 ORDER BY created_at DESC',
+                [userId]
+            );
+            return res.json({ success: true, drafts: rows });
+        }
+    } catch (err) {
+        console.error("Get Research Drafts Error:", err);
+        res.status(500).json({ success: false, message: 'Gagal mengambil usulan riset AI.' });
+    }
+});
+
+// Review Research Draft (Admin Only)
+app.post('/api/admin/research/review', async (req, res) => {
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        let role = req.headers['x-user-role'] || req.body.role;
+
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+                role = decoded.role;
+            } catch (err) {
+                // fallback
+            }
+        }
+
+        if (role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Forbidden: Hanya admin yang dapat menyetujui/menolak riset.' });
+        }
+
+        const { draftId, action } = req.body; // action: 'approved' or 'rejected'
+        if (!['approved', 'rejected'].includes(action)) {
+            return res.status(400).json({ success: false, message: 'Aksi tidak valid.' });
+        }
+
+        await db.query(
+            'UPDATE research_drafts SET status = $1 WHERE id = $2',
+            [action, draftId]
+        );
+
+        res.json({ success: true, message: `Riset AI berhasil di-${action === 'approved' ? 'setujui' : 'tolak'}.` });
+    } catch (err) {
+        console.error("Review Research Draft Error:", err);
+        res.status(500).json({ success: false, message: 'Gagal memproses usulan riset AI.' });
+    }
+});
+
 app.post('/api/expert/merge', async (req, res) => {
     const { draft } = req.body;
     try {
