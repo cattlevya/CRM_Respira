@@ -74,8 +74,8 @@ const Konsultasi = () => {
 
     // Filter appointments
     const now = new Date();
-    const upcomingAppointments = appointments.filter(a => new Date(a.requested_date) >= now && a.status !== 'rejected' && a.status !== 'cancelled');
-    const historyAppointments = appointments.filter(a => new Date(a.requested_date) < now || a.status === 'rejected' || a.status === 'cancelled');
+    const upcomingAppointments = appointments.filter(a => new Date(a.requested_date) >= now && a.status !== 'rejected' && a.status !== 'cancelled' && a.status !== 'completed');
+    const historyAppointments = appointments.filter(a => new Date(a.requested_date) < now || a.status === 'rejected' || a.status === 'cancelled' || a.status === 'completed');
 
     const displayedAppointments = activeTab === 'upcoming' ? upcomingAppointments : historyAppointments;
 
@@ -192,6 +192,7 @@ const Konsultasi = () => {
                             rejected: { label: 'Ditolak', cls: 'bg-red-100 text-red-700' },
                             cancelled: { label: 'Dibatalkan', cls: 'bg-slate-100 text-slate-500' },
                             pending: { label: 'Menunggu', cls: 'bg-amber-100 text-amber-700' },
+                            completed: { label: 'Selesai', cls: 'bg-teal-100 text-teal-700' },
                         };
                         const status = statusConfig[appt.status] || statusConfig.pending;
 
