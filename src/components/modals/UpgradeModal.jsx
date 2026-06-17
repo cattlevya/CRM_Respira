@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, AlertCircle, Check, Loader, Crown, MessageSquare, Calendar, Bell, Sparkles, Zap, Shield } from 'lucide-react';
+import { X, AlertCircle, Check, Loader, Crown, MessageSquare, Calendar, Bell, Sparkles, Zap, Shield, Send } from 'lucide-react';
 import { Card, Button, Badge } from '../ui/Widgets';
 import { useAuth } from '../../context/AuthContext';
 
