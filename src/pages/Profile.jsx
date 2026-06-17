@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Save, Phone, Calendar, Activity, Droplet, Ruler, Weight, Bell, Shield, Lock, Trash2, Send, Plus, Pin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Save, Phone, Calendar, Activity, Droplet, Ruler, Weight, Bell, Shield, Lock, Trash2, Send, Plus, Pin, LogOut, ArrowLeft } from 'lucide-react';
 import { Card, Button } from '../components/ui/Widgets';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import NotificationSettings from '../components/ui/NotificationSettings';
 
 const Profile = () => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('profile'); // 'profile' or 'telegram'
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -179,53 +181,59 @@ const Profile = () => {
                 <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-                            Pengaturan Profil
-                            {user?.is_premium && (
+                            {user?.role === 'admin' ? 'Profil Administrator' : 'Pengaturan Profil'}
+                            {user?.role !== 'admin' && user?.is_premium && (
                                 <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200/50 px-2.5 py-0.5 rounded-full font-extrabold tracking-wider uppercase flex items-center gap-1">
                                     <Shield className="w-3.5 h-3.5 text-teal-600" /> PRO
                                 </span>
                             )}
                         </h1>
-                        <p className="text-slate-500">Kelola data pribadi dan informasi medis Anda untuk akurasi diagnosa.</p>
+                        <p className="text-slate-500">
+                            {user?.role === 'admin' 
+                                ? 'Kelola profil akun admin Anda.' 
+                                : 'Kelola data pribadi dan informasi medis Anda untuk akurasi diagnosa.'}
+                        </p>
                     </div>
                 </header>
 
                 {/* Tabs Switcher */}
-                <div className="flex border-b border-slate-200 mb-6 gap-2">
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('profile')}
-                        className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 flex items-center ${
-                            activeTab === 'profile'
-                                ? 'border-teal-600 text-teal-600 font-bold'
-                                : 'border-transparent text-slate-500 hover:text-slate-800'
-                        }`}
-                    >
-                        <User className="w-4 h-4 mr-2" /> Profil & Data Biologis
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('telegram')}
-                        className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 flex items-center ${
-                            activeTab === 'telegram'
-                                ? 'border-teal-600 text-teal-600 font-bold'
-                                : 'border-transparent text-slate-500 hover:text-slate-800'
-                        }`}
-                    >
-                        <Bell className="w-4 h-4 mr-2" /> Notifikasi Telegram
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('medication')}
-                        className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 flex items-center ${
-                            activeTab === 'medication'
-                                ? 'border-teal-600 text-teal-600 font-bold'
-                                : 'border-transparent text-slate-500 hover:text-slate-800'
-                        }`}
-                    >
-                        <Activity className="w-4 h-4 mr-2" /> Jadwal Obat (Pro)
-                    </button>
-                </div>
+                {user?.role !== 'admin' && (
+                    <div className="flex border-b border-slate-200 mb-6 gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('profile')}
+                            className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 flex items-center ${
+                                activeTab === 'profile'
+                                    ? 'border-teal-600 text-teal-600 font-bold'
+                                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                            }`}
+                        >
+                            <User className="w-4 h-4 mr-2" /> Profil & Data Biologis
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('telegram')}
+                            className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 flex items-center ${
+                                activeTab === 'telegram'
+                                    ? 'border-teal-600 text-teal-600 font-bold'
+                                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                            }`}
+                        >
+                            <Bell className="w-4 h-4 mr-2" /> Notifikasi Telegram
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('medication')}
+                            className={`pb-3 px-4 font-semibold text-sm transition-all border-b-2 flex items-center ${
+                                activeTab === 'medication'
+                                    ? 'border-teal-600 text-teal-600 font-bold'
+                                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                            }`}
+                        >
+                            <Activity className="w-4 h-4 mr-2" /> Jadwal Obat (Pro)
+                        </button>
+                    </div>
+                )}
 
                 <Card className="p-8 shadow-lg">
                     {activeTab === 'profile' ? (
@@ -259,91 +267,95 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        {/* Medical Info */}
-                        <div>
-                            <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Data Biologis</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {user?.role !== 'admin' && (
+                            <>
+                                {/* Medical Info */}
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Tinggi Badan (cm)</label>
-                                    <div className="relative">
-                                        <Ruler className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
-                                        <input
-                                            type="number"
-                                            name="height"
-                                            value={formData.height || ''}
-                                            onChange={handleChange}
-                                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-                                            placeholder="170"
-                                        />
+                                    <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Data Biologis</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Tinggi Badan (cm)</label>
+                                            <div className="relative">
+                                                <Ruler className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
+                                                <input
+                                                    type="number"
+                                                    name="height"
+                                                    value={formData.height || ''}
+                                                    onChange={handleChange}
+                                                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                                                    placeholder="170"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Berat Badan (kg)</label>
+                                            <div className="relative">
+                                                <Weight className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
+                                                <input
+                                                    type="number"
+                                                    name="weight"
+                                                    value={formData.weight || ''}
+                                                    onChange={handleChange}
+                                                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                                                    placeholder="65"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Golongan Darah</label>
+                                            <div className="relative">
+                                                <Droplet className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
+                                                <select
+                                                    name="blood_type"
+                                                    value={formData.blood_type || ''}
+                                                    onChange={handleChange}
+                                                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none appearance-none bg-white transition-all"
+                                                >
+                                                    <option value="">Pilih...</option>
+                                                    <option value="A">A</option>
+                                                    <option value="B">B</option>
+                                                    <option value="AB">AB</option>
+                                                    <option value="O">O</option>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Berat Badan (kg)</label>
-                                    <div className="relative">
-                                        <Weight className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
-                                        <input
-                                            type="number"
-                                            name="weight"
-                                            value={formData.weight || ''}
-                                            onChange={handleChange}
-                                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-                                            placeholder="65"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Golongan Darah</label>
-                                    <div className="relative">
-                                        <Droplet className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
-                                        <select
-                                            name="blood_type"
-                                            value={formData.blood_type || ''}
-                                            onChange={handleChange}
-                                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none appearance-none bg-white transition-all"
-                                        >
-                                            <option value="">Pilih...</option>
-                                            <option value="A">A</option>
-                                            <option value="B">B</option>
-                                            <option value="AB">AB</option>
-                                            <option value="O">O</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div>
-                            <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Kontak Darurat</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Tanggal Lahir</label>
-                                    <div className="relative">
-                                        <Calendar className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
-                                        <input
-                                            type="date"
-                                            name="birth_date"
-                                            value={formData.birth_date || ''}
-                                            onChange={handleChange}
-                                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-                                        />
+                                    <h3 className="text-lg font-semibold text-slate-800 mb-4 border-b border-slate-100 pb-2">Kontak Darurat</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Tanggal Lahir</label>
+                                            <div className="relative">
+                                                <Calendar className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
+                                                <input
+                                                    type="date"
+                                                    name="birth_date"
+                                                    value={formData.birth_date || ''}
+                                                    onChange={handleChange}
+                                                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Nomor Telepon Darurat</label>
+                                            <div className="relative">
+                                                <Phone className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
+                                                <input
+                                                    type="text"
+                                                    name="emergency_contact"
+                                                    value={formData.emergency_contact || ''}
+                                                    onChange={handleChange}
+                                                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                                                    placeholder="0812..."
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Nomor Telepon Darurat</label>
-                                    <div className="relative">
-                                        <Phone className="absolute left-3 top-3 text-slate-400 w-5 h-5" />
-                                        <input
-                                            type="text"
-                                            name="emergency_contact"
-                                            value={formData.emergency_contact || ''}
-                                            onChange={handleChange}
-                                            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-                                            placeholder="0812..."
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            </>
+                        )}
 
                         {/* Message */}
                         {message.text && (
@@ -353,11 +365,48 @@ const Profile = () => {
                             </div>
                         )}
 
-                        {/* Submit */}
-                        <div className="flex justify-end pt-4">
-                            <Button type="submit" disabled={saving} className="bg-teal-600 hover:bg-teal-700 text-white border-none px-8 py-3 rounded-xl shadow-lg shadow-teal-500/30">
-                                {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                            </Button>
+                        {/* Submit & Actions */}
+                        <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4 pt-4 border-t border-slate-100">
+                            {user?.role === 'admin' ? (
+                                <>
+                                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate('/')}
+                                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-all flex items-center justify-center gap-2 font-medium"
+                                        >
+                                            <ArrowLeft className="w-4 h-4" /> Kembali ke Dashboard
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                logout();
+                                                navigate('/login');
+                                            }}
+                                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-all flex items-center justify-center gap-2 font-medium"
+                                        >
+                                            <LogOut className="w-4 h-4" /> Keluar
+                                        </button>
+                                    </div>
+                                    <Button 
+                                        type="submit" 
+                                        disabled={saving} 
+                                        className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white border-none px-8 py-3 rounded-xl shadow-lg shadow-teal-500/30"
+                                    >
+                                        {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                                    </Button>
+                                </>
+                            ) : (
+                                <div className="flex justify-end w-full">
+                                    <Button 
+                                        type="submit" 
+                                        disabled={saving} 
+                                        className="bg-teal-600 hover:bg-teal-700 text-white border-none px-8 py-3 rounded-xl shadow-lg shadow-teal-500/30"
+                                    >
+                                        {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                                    </Button>
+                                </div>
+                            )}
                         </div>
 
                     </form>

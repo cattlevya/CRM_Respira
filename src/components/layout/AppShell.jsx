@@ -17,6 +17,18 @@ const AppShell = ({ children }) => {
         setIsMobileSidebarOpen(false);
     }, [location.pathname]);
 
+    if (user?.role === 'admin') {
+        return (
+            <div className="h-screen w-screen overflow-y-auto bg-slate-50 font-inter">
+                <main className="min-h-full p-4 md:p-6 pb-8">
+                    <div className="max-w-7xl mx-auto">
+                        {children}
+                    </div>
+                </main>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-screen bg-slate-50 font-inter">
             {/* Top Navigation — desktop only */}
