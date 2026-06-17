@@ -952,8 +952,47 @@ app.get('/api/doctors', async (req, res) => {
     }
 });
 
+app.get('/api/consultations/check-quota/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const isPremium = await checkPremiumStatus(userId);
+        if (!isPremium) {
+            return res.json({
+                success: true,
+                isPremium: false,
+                quotaUsed: 0,
+                quotaLimit: 0,
+                requiresPayment: false,
+                requiresPro: true
+            });
+        }
+
+        // Count active consultations this month
+        const [countRows] = await db.query(`
+            SELECT COUNT(*) as count 
+            FROM consultations 
+            WHERE user_id = $1 
+              AND status IN ('pending', 'approved', 'completed')
+              AND requested_date >= DATE_TRUNC('month', CURRENT_DATE)
+        `, [userId]);
+
+        const quotaUsed = parseInt(countRows[0].count);
+        res.json({
+            success: true,
+            isPremium: true,
+            quotaUsed,
+            quotaLimit: 2,
+            requiresPayment: quotaUsed >= 2,
+            fee: 50000
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Gagal mengecek kuota konsultasi.' });
+    }
+});
+
 app.post('/api/consultations/book', async (req, res) => {
-    const { userId, diagnosisId, doctorId, date, notes } = req.body;
+    const { userId, diagnosisId, doctorId, date, notes, paymentCompleted } = req.body;
     try {
         // Premium check — only Pro users can book consultations
         const isPremium = await checkPremiumStatus(userId);
@@ -965,9 +1004,31 @@ app.post('/api/consultations/book', async (req, res) => {
             });
         }
 
+        // Count active consultations this month
+        const [countRows] = await db.query(`
+            SELECT COUNT(*) as count 
+            FROM consultations 
+            WHERE user_id = $1 
+              AND status IN ('pending', 'approved', 'completed')
+              AND requested_date >= DATE_TRUNC('month', CURRENT_DATE)
+        `, [userId]);
+
+        const quotaUsed = parseInt(countRows[0].count);
+        if (quotaUsed >= 2 && !paymentCompleted) {
+            return res.status(402).json({
+                success: false,
+                requiresPayment: true,
+                message: 'Kuota konsultasi gratis Anda bulan ini telah habis. Diperlukan pembayaran Rp 50.000 untuk membuat janji temu baru.'
+            });
+        }
+
+        const finalNotes = quotaUsed >= 2 
+            ? `${notes ? notes + '\n\n' : ''}[PAID MEET: Rp 50.000 Lunas via Payment Gateway]` 
+            : notes;
+
         await db.query(
             'INSERT INTO consultations (user_id, doctor_id, diagnosis_log_id, requested_date, notes) VALUES ($1, $2, $3, $4, $5)',
-            [userId, doctorId, diagnosisId, date, notes]
+            [userId, doctorId, diagnosisId, date, finalNotes]
         );
         res.json({ success: true, message: 'Janji temu berhasil dibuat.' });
     } catch (err) {

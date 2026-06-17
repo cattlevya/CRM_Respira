@@ -10,6 +10,8 @@ const BookingModal = ({ isOpen, onClose, userId, history, onSuccess }) => {
     const [step, setStep] = useState(1);
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [quotaStats, setQuotaStats] = useState(null);
+    const [checkingQuota, setCheckingQuota] = useState(false);
     const [formData, setFormData] = useState({
         diagnosisId: '',
         doctorId: '',
@@ -21,15 +23,29 @@ const BookingModal = ({ isOpen, onClose, userId, history, onSuccess }) => {
     const [doctorSchedule, setDoctorSchedule] = useState([]);
     const [conflictError, setConflictError] = useState(null);
 
+    const checkUserQuota = async () => {
+        if (!userId) return;
+        setCheckingQuota(true);
+        try {
+            const res = await api.checkQuota(userId);
+            if (res.success) setQuotaStats(res);
+        } catch (err) {
+            console.error("Check quota error:", err);
+        } finally {
+            setCheckingQuota(false);
+        }
+    };
+
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && userId) {
             fetchDoctors();
+            checkUserQuota();
             // Pre-select latest diagnosis if available
             if (history && history.length > 0) {
                 setFormData(prev => ({ ...prev, diagnosisId: history[0].id }));
             }
         }
-    }, [isOpen, history]);
+    }, [isOpen, history, userId]);
 
     // Fetch doctor's specific schedule when selected
     useEffect(() => {
@@ -99,6 +115,12 @@ const BookingModal = ({ isOpen, onClose, userId, history, onSuccess }) => {
 
         setLoading(true);
 
+        const isPaidFlow = quotaStats?.requiresPayment;
+        if (isPaidFlow) {
+            // Simulasi gerbang pembayaran
+            await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+
         // Combine date and time (MySQL format: YYYY-MM-DD HH:mm:ss)
         const dateTime = `${formData.date} ${formData.time}:00`;
 
@@ -107,16 +129,19 @@ const BookingModal = ({ isOpen, onClose, userId, history, onSuccess }) => {
             diagnosisId: formData.diagnosisId,
             doctorId: formData.doctorId,
             date: dateTime,
-            notes: formData.notes
+            notes: formData.notes,
+            paymentCompleted: isPaidFlow ? true : false
         });
 
         setLoading(false);
         if (res.success) {
+            alert(isPaidFlow ? 'Pembayaran Rp 50.000 Berhasil! Janji temu berhasil dibuat.' : 'Janji temu berhasil dibuat.');
             onSuccess();
             onClose();
             setStep(1);
             setFormData({ diagnosisId: '', doctorId: '', date: '', time: '', notes: '' });
             setConflictError(null);
+            setQuotaStats(null);
         } else {
             alert('Gagal membuat janji: ' + res.message);
         }
@@ -269,6 +294,17 @@ const BookingModal = ({ isOpen, onClose, userId, history, onSuccess }) => {
 
             {/* 4. Notes */}
             <div className="space-y-2">
+                {quotaStats?.requiresPayment && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2 text-xs text-amber-800 mb-2">
+                        <div className="flex items-center gap-2 font-bold text-amber-900">
+                            <AlertCircle size={16} className="text-amber-600 shrink-0" />
+                            Kuota Konsultasi Gratis Habis
+                        </div>
+                        <p className="leading-relaxed">
+                            Anda telah menggunakan <strong>{quotaStats.quotaUsed} slot konsultasi gratis</strong> bulan ini. Pembuatan janji temu berikutnya memerlukan biaya administrasi sebesar <strong>Rp 50.000</strong>.
+                        </p>
+                    </div>
+                )}
                 <label className="text-sm font-bold text-slate-700">Catatan Tambahan</label>
                 <textarea
                     className="w-full p-3 min-h-[44px] bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-h-[80px]"
@@ -280,10 +316,14 @@ const BookingModal = ({ isOpen, onClose, userId, history, onSuccess }) => {
 
             <Button
                 type="submit"
-                disabled={loading || !formData.doctorId || !!conflictError}
+                disabled={loading || !formData.doctorId || !!conflictError || checkingQuota}
                 className="w-full bg-teal-600 hover:bg-teal-700 text-white py-4 rounded-xl shadow-lg shadow-teal-500/30 font-bold text-lg"
             >
-                {loading ? 'Mengirim...' : 'Konfirmasi Janji Temu'}
+                {loading 
+                    ? (quotaStats?.requiresPayment ? 'Memproses Pembayaran...' : 'Mengirim...') 
+                    : quotaStats?.requiresPayment 
+                        ? 'Bayar Rp 50.000 & Konfirmasi' 
+                        : 'Konfirmasi Janji Temu'}
             </Button>
 
         </form>

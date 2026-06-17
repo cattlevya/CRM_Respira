@@ -207,6 +207,15 @@ export const api = {
     },
 
     // --- TELEMEDICINE (APPOINTMENTS) ---
+    checkQuota: async (userId) => {
+        try {
+            const response = await fetch(`${API_URL}/consultations/check-quota/${userId}`);
+            return await response.json();
+        } catch (error) {
+            return { success: false, requiresPayment: false };
+        }
+    },
+
     bookConsultation: async (data) => {
         try {
             const response = await fetch(`${API_URL}/consultations/book`, {
